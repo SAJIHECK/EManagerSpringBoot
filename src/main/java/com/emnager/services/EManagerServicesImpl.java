@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,9 +30,8 @@ import com.emnager.security.JWTGenerator;
 @Service
 public class EManagerServicesImpl implements EManagerServices {
 
-	@Value("${file.path}")
-	private static String UPLOADED_FOLDER;
-
+	private Path foundFile;
+	private String UPLOADED_FOLDER;
 	private UserRepository userRepository;
 	private PasswordEncoder passwordEncoder;
 	private AuthenticationManager authenticationManager;
@@ -38,8 +39,10 @@ public class EManagerServicesImpl implements EManagerServices {
 	private UserfileRepository fileRepository;
 
 	@Autowired
-	public EManagerServicesImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+	public EManagerServicesImpl(@Value("${file.path}") String UPLOADED_FOLDER, UserRepository userRepository, PasswordEncoder passwordEncoder,
 			AuthenticationManager authenticationManager, JWTGenerator jwtGenerator, UserfileRepository fileRepository) {
+	
+		this.UPLOADED_FOLDER=UPLOADED_FOLDER;
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.authenticationManager = authenticationManager;
@@ -60,8 +63,11 @@ public class EManagerServicesImpl implements EManagerServices {
 
 	@Override
 	public List<Users> getAllUser() {
-		return userRepository.findAll().stream().sorted((o1, o2) -> o1.getFirstName().compareTo(o2.getFirstName()))
-				.collect(Collectors.toList());
+		
+		List<Users> userList=userRepository.findAll().stream().filter(e -> !e.getRoleType().contains("A")).collect(Collectors.toList());
+
+		return userList.stream().sorted((o1, o2) -> o1.getFirstName().compareTo(o2.getFirstName()))
+				.collect(Collectors.toList());	
 	}
 
 	@Override
@@ -121,8 +127,33 @@ public class EManagerServicesImpl implements EManagerServices {
 	}
 
 	@Override
-	public UserFile downloadFile(int id) throws IOException {
+	public Resource downloadFile(int id) throws IOException {
+	
+		UserFile userFile = fileRepository.findById(id).get();
+		
+		Path uploadedDirectory=Paths.get(UPLOADED_FOLDER);
+		
+		Files.list(uploadedDirectory).forEach(file ->{
+			if(file.getFileName().toString().contains(userFile.getFileName())) {
+				foundFile=file;
+				return;
+			}
+		});
+			
+		if(foundFile!=null) {
+			return new UrlResource(foundFile.toUri());
+		
+		}
+		return null;
+		
+	}
+	
+	
+	@Override
+	public UserFile getUserFile(int id) {
 		return fileRepository.findById(id).get();
 	}
+
+	
 
 }

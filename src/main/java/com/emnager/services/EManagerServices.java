@@ -2,6 +2,8 @@ package com.emnager.services;
 
 import java.io.IOException;
 import java.util.List;
+
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 import com.emnager.entity.UserFile;
 import com.emnager.entity.Users;
@@ -26,5 +28,7 @@ public interface EManagerServices {
 
 	public void deleteFile(int id) throws IOException;
 
-	public UserFile downloadFile(int id) throws IOException;
+	public Resource downloadFile(int id) throws IOException;
+
+	public UserFile getUserFile(int id);
 }

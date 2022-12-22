@@ -72,13 +72,58 @@ public class Controller {
 
 	@GetMapping("downloadFile")
 	public ResponseEntity<Object> createUsers(@RequestParam int fileId) throws IOException {
-		UserFile usr = eManagerServices.downloadFile(fileId);
-		Resource resource = new ClassPathResource(usr.getFilePath());
-		byte[] dataArr = FileCopyUtils.copyToByteArray(resource.getInputStream());
-		HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"wallpaperflare.com_wallpaper.jpg\"");
-		return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/octet-stream"))
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-				.body(dataArr);
+		
+		Resource fileResource=null;
+		try {
+			fileResource=eManagerServices.downloadFile(fileId);
+		}catch (IOException e) {
+			return ResponseEntity.internalServerError().build();
+		}
+		
+		if(fileResource==null) {
+			return new ResponseEntity<>("File Not Found",HttpStatus.NOT_FOUND);
+		}
+		
+		String userFileName=eManagerServices.getUserFile(fileId).getFileName();
+		
+		
+		String contenttype="application/octet-stream";
+		
+		String sExt = userFileName.substring(userFileName.lastIndexOf("."));
+		
+		sExt = sExt.replace(".", "");
+		if (sExt.equalsIgnoreCase("png"))
+			contenttype="image/png";
+		if (sExt.equalsIgnoreCase("jpg"))
+			contenttype="image/pjpeg";
+		if (sExt.equalsIgnoreCase("jpeg"))
+			contenttype="image/jpeg";
+		if (sExt.equalsIgnoreCase("tif"))
+			contenttype="image/tif";
+		if (sExt.equalsIgnoreCase("tiff"))
+			contenttype="image/tiff";
+		if (sExt.equalsIgnoreCase("bmp"))
+			contenttype="image/bmp";
+		if (sExt.equalsIgnoreCase("gif"))
+			contenttype="image/gif";
+		if (sExt.equalsIgnoreCase("pdf"))
+			contenttype="application/pdf";
+		if (sExt.equalsIgnoreCase("doc"))
+			contenttype="application/msword";
+		if (sExt.equalsIgnoreCase("docx"))
+			contenttype="application/msword";
+		if (sExt.equalsIgnoreCase("rtf"))
+			contenttype="application/rtf";
+		if (sExt.equalsIgnoreCase("xls"))
+			contenttype="application/vnd.ms-excel";
+		if (sExt.equalsIgnoreCase("txt"))
+			contenttype="text/plain";
+		
+		
+		String headerValue="attachment; filename=\"" + fileResource.getFilename() + "\"";
+		
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contenttype)).
+				header(HttpHeaders.CONTENT_DISPOSITION,headerValue).body(fileResource);
+		
 	}
 }

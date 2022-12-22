@@ -28,7 +28,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf().disable().exceptionHandling().authenticationEntryPoint(authEntryPoint).and().sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-				.antMatchers("/authenticate").permitAll().anyRequest().authenticated().and().httpBasic();
+				.antMatchers("/authenticate","/createUser").permitAll().anyRequest().authenticated().and().httpBasic();
 		http.cors();
 		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 		return http.build();

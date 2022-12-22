@@ -1,5 +1,7 @@
 package com.emnager.exception;
 
+import java.nio.file.NoSuchFileException;
+
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,4 +41,15 @@ public class EManagerExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
 	}
 
+	@ExceptionHandler
+	public ResponseEntity<ErrorResponseOutput> HandleException(NoSuchFileException noSuchFileException) {
+
+		ErrorResponseOutput error = new ErrorResponseOutput();
+		error.setiError(ErrorCode.NO_Error);
+		error.setsMessage(errorMessage.getErrorMessage(ErrorCode.FileSizeExceeded));
+		error.setdTimeStamp(System.currentTimeMillis());
+		return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+	}
+	
+	
 }
